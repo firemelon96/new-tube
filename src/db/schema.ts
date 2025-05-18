@@ -21,10 +21,6 @@ export const users = pgTable(
   (t) => [uniqueIndex('clerk_id_idx').on(t.clerkId)]
 );
 
-export const userRelations = relations(users, ({ many }) => ({
-  videos: many(videos),
-}));
-
 export const categories = pgTable(
   'categories',
   {
@@ -54,6 +50,10 @@ export const videos = pgTable('videos', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
+
+export const userRelations = relations(users, ({ many }) => ({
+  videos: many(videos),
+}));
 
 export const videosRelations = relations(videos, ({ one }) => ({
   user: one(users, {
