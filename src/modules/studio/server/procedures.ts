@@ -45,10 +45,12 @@ export const studioRouter = createTRPCRouter({
 
       const items = hasMore ? data.slice(0, -1) : data;
 
-      const lastItem = items[items.length - 1];
+      const lastItem = items.length > 0 ? items[items.length - 1] : null;
 
       const nextCursor = hasMore
-        ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
+        ? lastItem
+          ? { id: lastItem.id, updatedAt: lastItem.updatedAt }
+          : null
         : null;
 
       return { items, nextCursor };
