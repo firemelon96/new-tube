@@ -39,7 +39,10 @@ export const categoryRelations = relations(users, ({ many }) => ({
   videos: many(videos),
 }));
 
-export const videoVisibility = pgEnum('video_viibility', ['private', 'public']);
+export const videoVisibility = pgEnum('video_visibility', [
+  'private',
+  'public',
+]);
 
 export const videos = pgTable('videos', {
   id: uuid('id').primaryKey().defaultRandom(),
