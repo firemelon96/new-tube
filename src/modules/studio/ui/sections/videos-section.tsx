@@ -101,9 +101,9 @@ const VideosSectionSuspense = () => {
               <TableHead>Visibility</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Date</TableHead>
-              <TableHead className='text-righ'>Views </TableHead>
-              <TableHead className='text-righ'>Comments</TableHead>
-              <TableHead className='text-righ pr-6'>Likes</TableHead>
+              <TableHead className='text-right'>Views </TableHead>
+              <TableHead className='text-right'>Comments</TableHead>
+              <TableHead className='text-right pr-6'>Likes</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -126,7 +126,7 @@ const VideosSectionSuspense = () => {
                             title={video.title}
                           />
                         </div>
-                        <div className='flex flex-col gap-y-1'>
+                        <div className='flex flex-col gap-y-1 overflow-hidden'>
                           <span className='text-sm line-clamp-1'>
                             {video.title}
                           </span>
