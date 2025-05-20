@@ -12,7 +12,6 @@ export const videosRouter = createTRPCRouter({
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ ctx, input }) => {
       const { id: userId } = ctx.user;
-      const utapi = new UTApi();
 
       const [existingVideo] = await db
         .select()
@@ -24,6 +23,8 @@ export const videosRouter = createTRPCRouter({
       }
 
       if (existingVideo.thumbnailKey) {
+        const utapi = new UTApi();
+
         await utapi.deleteFiles(existingVideo.thumbnailKey);
 
         await db
@@ -34,6 +35,7 @@ export const videosRouter = createTRPCRouter({
 
       const tempThumbnailUrl = `https://image.mux.com/${existingVideo.muxPlaybackId}/thumbnail.jpg`;
 
+      const utapi = new UTApi();
       const uploadedThumbnail = await utapi.uploadFilesFromUrl(
         tempThumbnailUrl
       );
