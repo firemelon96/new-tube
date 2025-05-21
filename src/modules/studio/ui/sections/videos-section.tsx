@@ -117,8 +117,8 @@ const VideosSectionSuspense = () => {
                 >
                   <TableRow className='cursor-pointer'>
                     <TableCell className='pl-6'>
-                      <div className='flex items-center gap-4'>
-                        <div className='relative aspect-video w-3/6 shrink-0'>
+                      <div className='flex items-center gap-4 w-fit'>
+                        <div className='relative aspect-video w-36 shrink-0'>
                           <VideoThumbnail
                             duration={video.duration}
                             imageUrl={video.thumbnailUrl}
@@ -126,11 +126,11 @@ const VideosSectionSuspense = () => {
                             title={video.title}
                           />
                         </div>
-                        <div className='flex flex-col gap-y-1 overflow-hidden'>
-                          <span className='text-sm line-clamp-1'>
+                        <div className='flex flex-col gap-y-1 w-72'>
+                          <span className='text-sm truncate'>
                             {video.title}
                           </span>
-                          <span className='text-xs text-muted-foreground line-clamp-1'>
+                          <span className='text-xs text-muted-foreground truncate'>
                             {video.description || 'No description'}
                           </span>
                         </div>
