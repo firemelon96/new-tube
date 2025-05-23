@@ -16,6 +16,8 @@ export const studioRouter = createTRPCRouter({
       const { id: userId } = ctx.user;
       const { id: videoId } = input;
 
+      // throw new TRPCError({ code: 'BAD_GATEWAY' });
+
       const [video] = await db
         .select()
         .from(videos)
