@@ -1,7 +1,7 @@
 import { Button, ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-interface SubsciptionButtonProps {
+interface SubscriptionButtonProps {
   onClick: ButtonProps['onClick'];
   disabled: boolean;
   isSubscribed: boolean;
@@ -15,7 +15,7 @@ export const SubscriptionButton = ({
   isSubscribed,
   className,
   size,
-}: SubsciptionButtonProps) => {
+}: SubscriptionButtonProps) => {
   return (
     <Button
       size={size}
