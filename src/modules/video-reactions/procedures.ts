@@ -5,6 +5,53 @@ import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 
+const toggleReaction = async (
+  userId: string,
+  videoId: string,
+  reaction: 'like' | 'dislike'
+) => {
+  const [existingVideoReaction] = await db
+    .select()
+    .from(videoReactions)
+    .where(
+      and(
+        eq(videoReactions.videoId, videoId),
+        eq(videoReactions.userId, userId),
+        eq(videoReactions.type, reaction)
+      )
+    );
+
+  if (existingVideoReaction) {
+    //toggle off: remove the reaction
+    return await db
+      .delete(videoReactions)
+      .where(
+        and(
+          eq(videoReactions.videoId, videoId),
+          eq(videoReactions.userId, userId)
+        )
+      )
+      .returning();
+  }
+
+  //adding or changing the reaction type
+  return await db
+    .insert(videoReactions)
+    .values({
+      videoId,
+      userId,
+      type: reaction,
+    })
+    .onConflictDoUpdate({
+      target: [videoReactions.videoId, videoReactions.userId],
+      set: {
+        type: reaction,
+        updatedAt: new Date(),
+      },
+    })
+    .returning();
+};
+
 export const videoReactionsRouter = createTRPCRouter({
   like: protectedProcedure
     .input(z.object({ videoId: z.string().uuid() }))
@@ -13,51 +60,13 @@ export const videoReactionsRouter = createTRPCRouter({
       const { id: userId } = ctx.user;
 
       try {
-        const [existingVideoReaction] = await db
-          .select()
-          .from(videoReactions)
-          .where(
-            and(
-              eq(videoReactions.videoId, videoId),
-              eq(videoReactions.userId, userId),
-              eq(videoReactions.type, 'like')
-            )
-          );
+        const [createdReaction] = await toggleReaction(userId, videoId, 'like');
 
-        if (existingVideoReaction) {
-          const [deleteViewerReaction] = await db
-            .delete(videoReactions)
-            .where(
-              and(
-                eq(videoReactions.videoId, videoId),
-                eq(videoReactions.userId, userId)
-              )
-            )
-            .returning();
-
-          return deleteViewerReaction;
-        }
-
-        const [createdVideoReaction] = await db
-          .insert(videoReactions)
-          .values({
-            videoId,
-            userId,
-            type: 'like',
-          })
-          .onConflictDoUpdate({
-            target: [videoReactions.videoId, videoReactions.userId],
-            set: {
-              type: 'like',
-            },
-          })
-          .returning();
-
-        return createdVideoReaction;
+        return createdReaction;
       } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create video view',
+          message: 'Failed to toggle video reaction',
         });
       }
     }),
@@ -68,51 +77,17 @@ export const videoReactionsRouter = createTRPCRouter({
       const { id: userId } = ctx.user;
 
       try {
-        const [existingVideoReaction] = await db
-          .select()
-          .from(videoReactions)
-          .where(
-            and(
-              eq(videoReactions.videoId, videoId),
-              eq(videoReactions.userId, userId),
-              eq(videoReactions.type, 'dislike')
-            )
-          );
+        const [createdReaction] = await toggleReaction(
+          userId,
+          videoId,
+          'dislike'
+        );
 
-        if (existingVideoReaction) {
-          const [deleteViewerReaction] = await db
-            .delete(videoReactions)
-            .where(
-              and(
-                eq(videoReactions.videoId, videoId),
-                eq(videoReactions.userId, userId)
-              )
-            )
-            .returning();
-
-          return deleteViewerReaction;
-        }
-
-        const [createdVideoReaction] = await db
-          .insert(videoReactions)
-          .values({
-            videoId,
-            userId,
-            type: 'dislike',
-          })
-          .onConflictDoUpdate({
-            target: [videoReactions.videoId, videoReactions.userId],
-            set: {
-              type: 'dislike',
-            },
-          })
-          .returning();
-
-        return createdVideoReaction;
+        return createdReaction;
       } catch (error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: 'Failed to create video view',
+          message: 'Failed to toggle video reaction',
         });
       }
     }),

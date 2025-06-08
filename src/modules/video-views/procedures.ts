@@ -33,6 +33,20 @@ export const videoViewsRouter = createTRPCRouter({
           .onConflictDoNothing()
           .returning();
 
+        // If conflict occurred, fetch the existing record
+        if (!createdVideoView) {
+          const [existingView] = await db
+            .select()
+            .from(videoViews)
+            .where(
+              and(
+                eq(videoViews.videoId, videoId),
+                eq(videoViews.userId, userId)
+              )
+            );
+          return existingView;
+        }
+
         return createdVideoView;
       } catch (error) {
         throw new TRPCError({

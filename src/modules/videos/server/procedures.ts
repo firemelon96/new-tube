@@ -1,5 +1,6 @@
 import { db } from '@/db';
 import {
+  subscriptions,
   users,
   videoReactions,
   videos,
@@ -14,7 +15,8 @@ import {
   protectedProcedure,
 } from '@/trpc/init';
 import { TRPCError } from '@trpc/server';
-import { and, eq, getTableColumns, inArray } from 'drizzle-orm';
+import { and, eq, getTableColumns, inArray, isNotNull, sql } from 'drizzle-orm';
+import { boolean } from 'drizzle-orm/gel-core';
 import { UTApi } from 'uploadthing/server';
 import { z } from 'zod';
 
@@ -24,32 +26,62 @@ export const videosRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { clerkUserId } = ctx;
 
-      let userId;
+      let userId: string | undefined;
 
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(inArray(users.clerkId, clerkUserId ? [clerkUserId] : []));
+      if (clerkUserId) {
+        const [user] = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.clerkId, clerkUserId));
 
-      if (user) {
         userId = user.id;
       }
 
+      // if (user) {
+      //   userId = user.id;
+      // }
+
       const viewerReactions = db.$with('viewer_reactions').as(
-        db
-          .select({
-            videoId: videoReactions.videoId,
-            type: videoReactions.type,
-          })
-          .from(videoReactions)
-          .where(inArray(videoReactions.userId, userId ? [userId] : []))
+        userId
+          ? db
+              .select({
+                videoId: videoReactions.videoId,
+                type: videoReactions.type,
+              })
+              .from(videoReactions)
+              .where(eq(videoReactions.userId, userId))
+          : db
+              .select()
+              .from(videoReactions)
+              .where(sql`1=0`) //return no rows
+      );
+
+      const viewerSubscriptions = db.$with('viewer_subscriptions').as(
+        userId
+          ? db
+              .select()
+              .from(subscriptions)
+              .where(eq(subscriptions.viewerId, userId))
+          : db
+              .select()
+              .from(subscriptions)
+              .where(sql`1=0`)
       );
 
       const [existingVideo] = await db
-        .with(viewerReactions)
+        .with(viewerReactions, viewerSubscriptions)
         .select({
           ...getTableColumns(videos),
-          user: { ...getTableColumns(users) },
+          user: {
+            ...getTableColumns(users),
+            subscriberCount: db.$count(
+              subscriptions,
+              eq(subscriptions.creatorId, users.id)
+            ),
+            viewerSubscibed: isNotNull(viewerSubscriptions.viewerId).mapWith(
+              Boolean
+            ),
+          },
           viewCount: db.$count(videoViews, eq(videoViews.videoId, videos.id)),
           likeCount: db.$count(
             videoReactions,
@@ -70,9 +102,17 @@ export const videosRouter = createTRPCRouter({
         .from(videos)
         .innerJoin(users, eq(videos.userId, users.id))
         .leftJoin(viewerReactions, eq(viewerReactions.videoId, videos.id))
-        .where(eq(videos.id, input.id));
-      // .groupBy(
-      // videos.id, users.id, viewerReactions.type);
+        .leftJoin(
+          viewerSubscriptions,
+          eq(viewerSubscriptions.creatorId, users.id)
+        )
+        .where(eq(videos.id, input.id))
+        .groupBy(
+          videos.id,
+          users.id,
+          viewerReactions.type,
+          viewerSubscriptions.viewerId
+        );
 
       if (!existingVideo) {
         throw new TRPCError({ code: 'NOT_FOUND' });
