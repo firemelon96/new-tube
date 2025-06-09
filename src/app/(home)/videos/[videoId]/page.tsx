@@ -9,6 +9,7 @@ const Page = async ({ params }: PageProps) => {
   const { videoId } = await params;
 
   await trpc.videos.getOne.prefetch({ id: videoId });
+  await trpc.comments.getMany.prefetch({ videoId });
 
   return (
     <HydrateClient>
