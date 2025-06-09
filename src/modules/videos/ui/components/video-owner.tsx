@@ -17,7 +17,7 @@ export const VideoOwner = ({ user, videoId }: VideoOwnerProps) => {
   const { userId: clerkUserId, isLoaded } = useAuth();
   const { isPending, onClick } = useSubscription({
     userId: user.id,
-    isSubscribed: user.viewerSubscibed,
+    isSubscribed: user.viewerSubscribed,
     fromVideoId: videoId,
   });
 
@@ -43,7 +43,7 @@ export const VideoOwner = ({ user, videoId }: VideoOwnerProps) => {
           className='flex-none'
           onClick={onClick}
           disabled={isPending || !isLoaded}
-          isSubscribed={user.viewerSubscibed}
+          isSubscribed={user.viewerSubscribed}
         />
       )}
     </div>

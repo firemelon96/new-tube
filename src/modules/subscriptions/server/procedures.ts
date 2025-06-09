@@ -28,7 +28,7 @@ export const subscriptionsRouter = createTRPCRouter({
       const { userId } = input;
 
       if (userId === ctx.user.id) {
-        throw new TRPCError({ code: 'BAD_GATEWAY' });
+        throw new TRPCError({ code: 'BAD_REQUEST' });
       }
 
       const [unsubscribe] = await db

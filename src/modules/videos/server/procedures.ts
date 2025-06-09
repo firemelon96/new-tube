@@ -15,8 +15,7 @@ import {
   protectedProcedure,
 } from '@/trpc/init';
 import { TRPCError } from '@trpc/server';
-import { and, eq, getTableColumns, inArray, isNotNull, sql } from 'drizzle-orm';
-import { boolean } from 'drizzle-orm/gel-core';
+import { and, eq, getTableColumns, isNotNull, sql } from 'drizzle-orm';
 import { UTApi } from 'uploadthing/server';
 import { z } from 'zod';
 
@@ -34,7 +33,7 @@ export const videosRouter = createTRPCRouter({
           .from(users)
           .where(eq(users.clerkId, clerkUserId));
 
-        userId = user.id;
+        userId = user?.id;
       }
 
       // if (user) {
@@ -78,7 +77,7 @@ export const videosRouter = createTRPCRouter({
               subscriptions,
               eq(subscriptions.creatorId, users.id)
             ),
-            viewerSubscibed: isNotNull(viewerSubscriptions.viewerId).mapWith(
+            viewerSubscribed: isNotNull(viewerSubscriptions.viewerId).mapWith(
               Boolean
             ),
           },
