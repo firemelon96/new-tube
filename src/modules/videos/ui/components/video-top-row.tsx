@@ -22,8 +22,8 @@ export const VideoTopRowSkeleton = () => {
         <div className='flex items-center gap-3 w-[70%]'>
           <Skeleton className='size-10 rounded-full shrink-0' />
           <div className='flex flex-col gap-2 w-full'>
-            <Skeleton className='h-5 w-4/5 md:2/6' />
-            <Skeleton className='h-5 w-3/5 md:1/5' />
+            <Skeleton className='h-5 w-4/5 md:w-2/6' />
+            <Skeleton className='h-5 w-3/5 md:w-1/5' />
           </div>
         </div>
         <Skeleton className='h-9 w-2/6 md:w-1/6 rounded-full' />
